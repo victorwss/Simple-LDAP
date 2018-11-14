@@ -26,6 +26,11 @@ public final class LdapAuthenticator implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * Used internally by the {@link #findDn(String)} method.
+     */
+    private static final String[] DISTINGUISHED_NAME = { "distinguishedName" };
+
+    /**
      * The LDAP server used for authentication.
      */
     private final LdapServer server;
@@ -112,6 +117,10 @@ public final class LdapAuthenticator implements Serializable {
      * @throws UserNotFoundException The user couldn't be found in the LDAP server.
      * @throws LdapConnectionException If there was a problem connecting or searching for the user in the LDAP server.
      */
+    @SuppressFBWarnings(
+            value = "LDAP_INJECTION",
+            justification = "We use the escape method exactly to avoid this, but SpotBugs can't understand it."
+    )
     public String findDn(String login) throws LdapConnectionException, UserNotFoundException {
         LdapContext ctx;
         try {
@@ -122,13 +131,11 @@ public final class LdapAuthenticator implements Serializable {
 
         SearchControls sc = new SearchControls();
         sc.setSearchScope(SearchControls.SUBTREE_SCOPE);
-
-        String[] atributosParaRetornar = { "distinguishedName" };
-        sc.setReturningAttributes(atributosParaRetornar);
+        sc.setReturningAttributes(DISTINGUISHED_NAME);
 
         try {
-            String filtro = "(&(sAMAccountName=" + escape(login) + "))";
-            NamingEnumeration<SearchResult> cursor = ctx.search(baseDn, filtro, sc);
+            String filter = "(&(sAMAccountName=" + escape(login) + "))";
+            NamingEnumeration<SearchResult> cursor = ctx.search(baseDn, filter, sc);
             if (!cursor.hasMoreElements()) throw new UserNotFoundException();
 
             SearchResult result = cursor.nextElement();
@@ -174,7 +181,10 @@ public final class LdapAuthenticator implements Serializable {
      *         Notably this do not means that the user credentials are neither correct nor incorrect, it just denotes that
      *         they couldn't even be verified to start with.
      */
-    @SuppressFBWarnings("EXS_EXCEPTION_SOFTENING_RETURN_FALSE")
+    @SuppressFBWarnings(
+            value = "EXS_EXCEPTION_SOFTENING_RETURN_FALSE",
+            justification = "That is precisely the purpose of this method."
+    )
     public boolean tryAuthenticate(String login, String password) throws LdapConnectionException {
         try {
             authenticate(login, password);

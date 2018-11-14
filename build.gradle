@@ -1,5 +1,5 @@
 plugins {
-    id "com.github.spotbugs" version "1.6.2"
+    id "com.github.spotbugs" version "1.6.5"
     id "java-library"
     id "maven-publish"
     id "checkstyle"
@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "ninja.javahacker"
-version = "1.0.0"
+version = "1.0.1"
 ext.artifactBaseName = "simpleldap"
 ext.moduleName = "ninja.javahacker.simpleldap"
 
@@ -17,27 +17,27 @@ ext.doclint = true
 ext.extraCompilerArgs = []
 
 ext.versionApiguardian = "1.0.0"
-ext.versionCheckstyle = "8.12"
+ext.versionCheckstyle = "8.14"
 ext.versionFbContrib = "7.4.3.sb"
 ext.versionFindSecBugs = "1.8.0"
-ext.versionJaCoCo = "0.8.1"
+ext.versionJaCoCo = "0.8.2"
 ext.versionJcip = "1.0"
-ext.versionJunit = "5.3.0-RC1"
+ext.versionJunit = "5.3.1"
 ext.versionJsr305 = "3.0.2"
-ext.versionPmd = "6.6.0"
-ext.versionSpotBugs = "3.1.6"
+ext.versionPmd = "6.9.0"
+ext.versionSpotBugs = "3.1.8"
 
 dependencies {
-
-    // PMD
-    compileOnly group: 'net.sourceforge.pmd', name: 'pmd', version: versionPmd
-    testCompileOnly group: 'net.sourceforge.pmd', name: 'pmd', version: versionPmd
 
     // JUnit
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versionJunit
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: versionJunit
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: versionJunit
     testCompileOnly group: 'org.apiguardian', name: 'apiguardian-api', version: versionApiguardian
+
+    // PMD
+    compileOnly group: 'net.sourceforge.pmd', name: 'pmd', version: versionPmd
+    testCompileOnly group: 'net.sourceforge.pmd', name: 'pmd', version: versionPmd
 
     // SpotBugs + plugins
     spotbugs group: 'com.github.spotbugs', name: 'spotbugs', version :versionSpotBugs
@@ -66,8 +66,11 @@ tasks.withType(JavaCompile) {
     options.debug = true
     options.fork = true
     options.compilerArgs << "-parameters" << "-Xlint:all,-processing"
-    if (doclint) options.compilerArgs << "-Xdoclint:all"
     extraCompilerArgs.each { e -> options.compilerArgs << e }
+}
+
+compileJava {
+    if (doclint) options.compilerArgs << "-Xdoclint:all"
 }
 
 tasks.withType(Javadoc) {
@@ -96,6 +99,9 @@ checkstyle {
 
 spotbugs {
     toolVersion = versionSpotBugs
+    effort = "max"
+    reportLevel = "low"
+    omitVisitors = ["WeakExceptionMessaging", "OverlyPermissiveMethod"]
 }
 
 tasks.withType(com.github.spotbugs.SpotBugsTask) {
@@ -105,6 +111,8 @@ tasks.withType(com.github.spotbugs.SpotBugsTask) {
         html.enabled = true
     }
 }
+
+spotbugsTest.enabled = false
 
 jar {
     baseName = artifactBaseName
