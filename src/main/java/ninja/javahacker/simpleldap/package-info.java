@@ -1,5 +1,5 @@
 /**
- * This package provides a simple utility for connecting in an LDAP server.
+ * This package provides a simple utility for connecting in a LDAP server.
  *
  * <p>The {@link LdapAuthenticator} class if the main class to be used in order to authenticate users.</p>
  *
@@ -56,13 +56,13 @@
  * }
  * </pre>
  *
- * In the preceding code, the {@code authenticate} method would be used to authenticate an user,
+ * <p>In the preceding code, the {@code authenticate} method would be used to authenticate an user,
  * throwing exception if he/she could not be authenticated. On the other hand, the {@code tryAuthenticate}
  * method tells if the user can or can't be authenticated (it still throws an exception if the authentication
  * procedure can't be performed at all). The {@code findUserDn} method is responsible for finding a user DN
- * given his/her login.
+ * given his/her login.</p>
  *
- * Another simpler, but probably less useful use case, is authenticating the user by his/her DN instead of his/her login:
+ * <p>Another simpler, but probably less useful use case, is authenticating the user by his/her DN instead of his/her login:</p>
  *
  * <pre>
  *     import ninja.javahacker.simpleldap.LdapConnectionException;
@@ -102,9 +102,9 @@
  *     }
  * </pre>
  *
- * Of course, the preceding codes works when the LDAP configuration parameters are immutable.
+ * <p>Of course, the preceding codes works when the LDAP configuration parameters are immutable.
  * If they aren't or should be configured in some other way, you should adapt them to your
- * reality.
+ * reality.</p>
  *
  * @author Victor Williams Stafusa da Silva
  */
