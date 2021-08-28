@@ -1,2 +1,2 @@
 chcp 65001 > nul
-gradle clean build publish publishToMavenLocal
+gradle --warning-mode all --stacktrace clean build publish publishToMavenLocal
