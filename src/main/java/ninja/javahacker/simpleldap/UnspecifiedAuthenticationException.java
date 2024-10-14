@@ -12,6 +12,7 @@ public class UnspecifiedAuthenticationException extends AuthenticationFailedExce
      * The serial version identifier.
      * @see java.io.Serializable
      */
+    @SuppressWarnings("unused")
     private static final long serialVersionUID = 1L;
 
     /**

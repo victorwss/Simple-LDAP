@@ -9,6 +9,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
+import lombok.NonNull;
 
 /**
  * Object used to authenticate users from DN and password.
@@ -23,6 +24,7 @@ public final class LdapServer implements Serializable {
      * The serial version identifier.
      * @see Serializable
      */
+    @SuppressWarnings("unused")
     private static final long serialVersionUID = 1L;
 
     /**
@@ -32,8 +34,9 @@ public final class LdapServer implements Serializable {
     private static final String INITIAL_CTX = "com.sun.jndi.ldap.LdapCtxFactory";
 
     /**
-     * The hostname of the LDAP server.
+     * The host name of the LDAP server.
      */
+    @NonNull
     private final String hostname;
 
     /**
@@ -43,14 +46,17 @@ public final class LdapServer implements Serializable {
 
     /**
      * Constructs a {@code LdapServer} instance.
-     * @param hostname The hostname of the LDAP server.
+     * @param hostname The host name of the LDAP server.
      * @param port The port used to connect to the LDAP server.
-     * @throws IllegalArgumentException If the {@code} hostname parameter is {@code null} or
+     * @throws IllegalArgumentException If the {@code} host name parameter is {@code null} or
      *         if the {@code port} is not in the valid range of 1-65535.
      * @throws LdapConnectionException If there was a problem connecting in the LDAP server.
      */
-    public LdapServer(String hostname, int port) throws LdapConnectionException {
-        if (hostname == null) throw new IllegalArgumentException("The hostname shouldn't be null.");
+    public LdapServer(
+            @NonNull String hostname,
+            int port)
+            throws LdapConnectionException
+    {
         if (port <= 0 || port >= 65536) throw new IllegalArgumentException("Illegal port number.");
         this.hostname = hostname;
         this.port = port;
@@ -63,18 +69,20 @@ public final class LdapServer implements Serializable {
      * @param userDn The user's DN.
      * @param password The user's password.
      * @return An {@link LdapContext} authenticated with the user credentials.
+     * @throws IllegalArgumentException If any of the parameters is {@code null}.
      * @throws UnspecifiedAuthenticationException The user couldn't be authenticated in the LDAP server for some reason.
      * @throws LdapConnectionException If there was a problem connecting or searching for the user in the LDAP server.
      *         Notably this do not means that the user credentials are neither correct nor incorrect, it just denotes that
      *         they couldn't even be verified to start with.
      */
     public LdapContext createLdapConnection(
-            String userDn,
-            String password)
+            @NonNull String userDn,
+            @NonNull String password)
             throws UnspecifiedAuthenticationException,
             LdapConnectionException
     {
-        Hashtable<String, Object> env = new Hashtable<>();
+        @SuppressWarnings("UseOfObsoleteCollectionType")
+        Hashtable<String, Object> env = new Hashtable<>(5);
 
         env.put(Context.INITIAL_CONTEXT_FACTORY, INITIAL_CTX);
         env.put(Context.PROVIDER_URL, toString());
@@ -99,7 +107,8 @@ public final class LdapServer implements Serializable {
      * @throws LdapConnectionException If there was a problem connecting in the LDAP server.
      */
     public LdapContext connect() throws LdapConnectionException {
-        Hashtable<String, Object> env = new Hashtable<>();
+        @SuppressWarnings("UseOfObsoleteCollectionType")
+        Hashtable<String, Object> env = new Hashtable<>(3);
 
         env.put(Context.INITIAL_CONTEXT_FACTORY, INITIAL_CTX);
         env.put(Context.PROVIDER_URL, toString());
@@ -119,16 +128,21 @@ public final class LdapServer implements Serializable {
      * @param password The user's password.
      * @return {@code true} if the authentication was successfully.
      *         {@code false} if the user couldn't be found or his/her password is incorrect.
+     * @throws IllegalArgumentException If any of the parameters is {@code null}.
      * @throws LdapConnectionException If there was a problem connecting or searching for the user in the LDAP server.
      *         Notably this do not means that the user credentials are neither correct nor incorrect, it just denotes that
      *         they couldn't even be verified to start with.
      */
     @SuppressFBWarnings("EXS_EXCEPTION_SOFTENING_RETURN_FALSE")
-    public boolean tryAuthenticate(String userDn, String password) throws LdapConnectionException {
+    public boolean tryAuthenticate(
+            @NonNull String userDn,
+            @NonNull String password)
+            throws LdapConnectionException
+    {
         try {
             createLdapConnection(userDn, password);
             return true;
-        } catch (AuthenticationFailedException x) {
+        } catch (UnspecifiedAuthenticationException x) {
             return false;
         }
     }
@@ -137,12 +151,18 @@ public final class LdapServer implements Serializable {
      * Asserts that a user given by DN can authenticate in a LDAP server or throw an exception if otherwise.
      * @param userDn The user's DN.
      * @param password The user's password.
+     * @throws IllegalArgumentException If any of the parameters is {@code null}.
      * @throws UnspecifiedAuthenticationException The user couldn't be authenticated in the LDAP server for some reason.
      * @throws LdapConnectionException If there was a problem connecting or searching for the user in the LDAP server.
      *         Notably this do not means that the user credentials are neither correct nor incorrect, it just denotes that
      *         they couldn't even be verified to start with.
      */
-    public void authenticate(String userDn, String password) throws LdapConnectionException, UnspecifiedAuthenticationException {
+    public void authenticate(
+            @NonNull String userDn,
+            @NonNull String password)
+            throws LdapConnectionException,
+            UnspecifiedAuthenticationException
+    {
         createLdapConnection(userDn, password);
     }
 

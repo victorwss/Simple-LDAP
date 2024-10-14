@@ -13,6 +13,7 @@ public abstract class AuthenticationFailedException extends Exception {
      * The serial version identifier.
      * @see java.io.Serializable
      */
+    @SuppressWarnings("unused")
     private static final long serialVersionUID = 1L;
 
     /**

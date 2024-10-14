@@ -9,6 +9,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
+import lombok.NonNull;
 
 /**
  * Object used to find the DN from a given login in LDAP and authenticate users from login and password.
@@ -23,6 +24,7 @@ public final class LdapAuthenticator implements Serializable {
      * The serial version identifier.
      * @see Serializable
      */
+    @SuppressWarnings("unused")
     private static final long serialVersionUID = 1L;
 
     /**
@@ -33,21 +35,25 @@ public final class LdapAuthenticator implements Serializable {
     /**
      * The LDAP server used for authentication.
      */
+    @NonNull
     private final LdapServer server;
 
     /**
      * The root DN used to connect to the server.
      */
+    @NonNull
     private final String rootDn;
 
     /**
      * The password of the root DN used to connect to the server.
      */
+    @NonNull
     private final String rootPassword;
 
     /**
      * The base DN used to search for user DNs in order to find their logins.
      */
+    @NonNull
     private final String baseDn;
 
     /**
@@ -56,41 +62,48 @@ public final class LdapAuthenticator implements Serializable {
      * @param rootDn The root DN used to connect to the server.
      * @param rootPassword The password of the root DN used to connect to the server.
      * @param baseDn The base DN used to search for user DNs in order to find their logins.
-     * @throws LdapConnectionException If there is a problem connecting to the LDAP server. This is specially plausible if
-     *         any of the parameters, except for {@code baseDn} is incorrect or if there is some other problem in the proccess of
-     *         stablishing a LDAP connection.
      * @throws IllegalArgumentException If any of the parameters is {@code null}.
+     * @throws LdapConnectionException If there is a problem connecting to the LDAP server. This is specially plausible if
+     *         any of the parameters, except for {@code baseDn} is incorrect or if there is some other problem in the process of
+     *         establishing a LDAP connection.
      */
-    public LdapAuthenticator(LdapServer server, String rootDn, String rootPassword, String baseDn) throws LdapConnectionException {
-        if (server == null) throw new IllegalArgumentException("The server shouldn't be null.");
-        if (rootDn == null) throw new IllegalArgumentException("The admin user shouldn't be null.");
-        if (rootPassword == null) throw new IllegalArgumentException("The admin password shouldn't be null.");
-        if (baseDn == null) throw new IllegalArgumentException("The base DN shouldn't be null.");
+    public LdapAuthenticator(
+            @NonNull LdapServer server,
+            @NonNull String rootDn,
+            @NonNull String rootPassword,
+            @NonNull String baseDn)
+            throws LdapConnectionException
+    {
         this.server = server;
         this.rootDn = rootDn;
         this.rootPassword = rootPassword;
         this.baseDn = baseDn;
         try {
             server.createLdapConnection(rootDn, rootPassword);
-        } catch (AuthenticationFailedException x) {
+        } catch (UnspecifiedAuthenticationException x) {
             throw new LdapConnectionException(x);
         }
     }
 
     /**
      * Create a {@code LdapAuthenticator} instance.
-     * @param hostname The hostname of the LDAP server.
+     * @param hostname The host name of the LDAP server.
      * @param port The port used to connect to the LDAP server used for authentication.
      * @param rootDn The root DN used to connect to the server used for authentication.
      * @param rootPassword The password of the root DN used to connect to the server.
      * @param baseDn The base DN used to search for user DNs in order to find their logins.
      * @throws LdapConnectionException If there is a problem connecting to the LDAP server. This is specially plausible if
      *         any of the parameters, except for {@code baseDn} is incorrect or if there is some other problem in the proccess of
-     *         stablishing a LDAP connection.
+     *         establishing a LDAP connection.
      * @throws IllegalArgumentException If any of the parameters is {@code null} or
      *         if the {@code port} is not in the valid range of 1-65535.
      */
-    public LdapAuthenticator(String hostname, int port, String rootDn, String rootPassword, String baseDn)
+    public LdapAuthenticator(
+            @NonNull String hostname,
+            int port,
+            @NonNull String rootDn,
+            @NonNull String rootPassword,
+            @NonNull String baseDn)
             throws LdapConnectionException
     {
         this(new LdapServer(hostname, port), rootDn, rootPassword, baseDn);
@@ -100,8 +113,9 @@ public final class LdapAuthenticator implements Serializable {
      * Escape a login name to ensure that some sensible characters are properly escaped.
      * @param name The login name to be escaped.
      * @return The escaped login name.
+     * @throws IllegalArgumentException If the parameter is {@code null}.
      */
-    private static String escape(String name) {
+    private static String escape(@NonNull String name) {
         return name
                 .replace("(", "\\28")
                 .replace(")", "\\29")
@@ -114,6 +128,7 @@ public final class LdapAuthenticator implements Serializable {
      * Finds the DN of an user in the LDAP server given his/her login.
      * @param login The user's login.
      * @return The user's DN.
+     * @throws IllegalArgumentException If any of the parameters is {@code null}.
      * @throws UserNotFoundException The user couldn't be found in the LDAP server.
      * @throws LdapConnectionException If there was a problem connecting or searching for the user in the LDAP server.
      */
@@ -121,7 +136,7 @@ public final class LdapAuthenticator implements Serializable {
             value = "LDAP_INJECTION",
             justification = "We use the escape method exactly to avoid this, but SpotBugs can't understand it."
     )
-    public String findDn(String login) throws LdapConnectionException, UserNotFoundException {
+    public String findDn(@NonNull String login) throws LdapConnectionException, UserNotFoundException {
         LdapContext ctx;
         try {
             ctx = server.createLdapConnection(rootDn, rootPassword);
@@ -150,6 +165,7 @@ public final class LdapAuthenticator implements Serializable {
      * Asserts that a user given by login can authenticate in a LDAP server or throw an exception if otherwise.
      * @param login The user's login.
      * @param password The user's password.
+     * @throws IllegalArgumentException If any of the parameters is {@code null}.
      * @throws UserNotFoundException The user couldn't be found in the LDAP server.
      * @throws IncorrectPasswordException The user could be found, but his/her password is incorrect.
      * @throws LdapConnectionException If there was a problem connecting or searching for the user in the LDAP server.
@@ -157,8 +173,8 @@ public final class LdapAuthenticator implements Serializable {
      *         they couldn't even be verified to start with.
      */
     public void authenticate(
-            String login,
-            String password)
+            @NonNull String login,
+            @NonNull String password)
             throws LdapConnectionException,
             UserNotFoundException,
             IncorrectPasswordException
@@ -166,7 +182,7 @@ public final class LdapAuthenticator implements Serializable {
         String dn = findDn(login);
         try {
             server.authenticate(dn, password);
-        } catch (AuthenticationFailedException x) {
+        } catch (UnspecifiedAuthenticationException x) {
             throw new IncorrectPasswordException(x);
         }
     }
@@ -177,6 +193,7 @@ public final class LdapAuthenticator implements Serializable {
      * @param password The user's password.
      * @return {@code true} if the authentication was successfully.
      *         {@code false} if the user couldn't be found or his/her password is incorrect.
+     * @throws IllegalArgumentException If any of the parameters is {@code null}.
      * @throws LdapConnectionException If there was a problem connecting or searching for the user in the LDAP server.
      *         Notably this do not means that the user credentials are neither correct nor incorrect, it just denotes that
      *         they couldn't even be verified to start with.
@@ -185,7 +202,11 @@ public final class LdapAuthenticator implements Serializable {
             value = "EXS_EXCEPTION_SOFTENING_RETURN_FALSE",
             justification = "That is precisely the purpose of this method."
     )
-    public boolean tryAuthenticate(String login, String password) throws LdapConnectionException {
+    public boolean tryAuthenticate(
+            @NonNull String login,
+            @NonNull String password)
+            throws LdapConnectionException
+    {
         try {
             authenticate(login, password);
             return true;
